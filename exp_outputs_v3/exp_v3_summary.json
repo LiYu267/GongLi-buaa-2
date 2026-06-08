@@ -1,0 +1,91 @@
+{
+  "experiment": "v3",
+  "improvements": [
+    "SAR_histogram_matching",
+    "InSAR_temporal_normalization",
+    "prediction_bootstrap_sigma",
+    "DS_fusion",
+    "upgraded_synthetic"
+  ],
+  "n_sensors": 4,
+  "sensors": [
+    "VIIRS",
+    "S2",
+    "SAR",
+    "InSAR"
+  ],
+  "p_means": [
+    0.03233301639556885,
+    0.5589610934257507,
+    0.00624612532556057,
+    0.21339063346385956
+  ],
+  "fusion_mean": 0.2097042351961136,
+  "fusion_std": 0.03568730503320694,
+  "hdi_width": 0.13939151430864513,
+  "ds_bel": 0.013861922314687776,
+  "ds_pl": 0.015365694092511177,
+  "n_pixels": 6591,
+  "synthetic_results": [
+    {
+      "scenario": "A:VIIRS-dom",
+      "auc_single": [
+        0.8673,
+        0.8835,
+        0.8933,
+        0.7931
+      ],
+      "auc_bayes": 0.8815,
+      "auc_vote": 0.8815,
+      "auc_ds": 0.8774
+    },
+    {
+      "scenario": "B:S2-dom",
+      "auc_single": [
+        0.8647,
+        0.8356,
+        0.8441,
+        0.8194
+      ],
+      "auc_bayes": 0.8601,
+      "auc_vote": 0.8601,
+      "auc_ds": 0.8529
+    },
+    {
+      "scenario": "C:SAR-dom",
+      "auc_single": [
+        0.8746,
+        0.8619,
+        0.8543,
+        0.7692
+      ],
+      "auc_bayes": 0.8573,
+      "auc_vote": 0.8573,
+      "auc_ds": 0.8578
+    },
+    {
+      "scenario": "D:All-strong",
+      "auc_single": [
+        0.8471,
+        0.866,
+        0.8696,
+        0.8545
+      ],
+      "auc_bayes": 0.8669,
+      "auc_vote": 0.8669,
+      "auc_ds": 0.8648
+    },
+    {
+      "scenario": "E:Mixed",
+      "auc_single": [
+        0.8407,
+        0.8507,
+        0.8322,
+        0.8052
+      ],
+      "auc_bayes": 0.8375,
+      "auc_vote": 0.8375,
+      "auc_ds": 0.8381
+    }
+  ]
+}

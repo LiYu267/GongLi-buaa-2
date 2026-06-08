@@ -1,0 +1,16 @@
+
+Synthetic Validation Results
+=============================
+N_test = 100 pixels (injected damage)
+Scenarios: A=VIRS-dominant, B=S2-dominant, C=Both-strong
+True damage ratio: 50.0%
+
+Method          AUC
+------          ---
+VIIRS-only:     0.9800
+S2-only:        0.7432
+Vote Mean:      0.9832
+Bayesian:       0.9832
+
+Note: Synthetic validation demonstrates that Bayesian fusion can
+recover known damage patterns even when individual sensors disagree.

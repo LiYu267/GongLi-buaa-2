@@ -1,0 +1,50 @@
+# Satellite data files (multi-GB)
+*.h5
+*.zip
+*.tiff
+*.tif
+*.jp2
+*.jpg
+*.png
+*.xml
+*.safe
+*.SAFE
+*.eps
+*.wxdownload
+
+# Large data directories
+s1_pre/
+s1_post/
+s2_may2021/
+new/
+干涉/
+战后1/
+战后2/
+战前1/
+战前2/
+
+# Temp
+__MACOSX/
+acml_template/
+_temp_extract/
+
+# Large v1 intermediate files
+exp_outputs/exp_v1_s2_*
+exp_outputs/exp_v1_p1_viirs*
+exp_outputs/exp_v1_s1_viirs*
+
+# Python cache
+__pycache__/
+*.pyc
+
+# LaTeX aux files (keep only source and PDF)
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.toc
+
+# IDE
+.vscode/
+.claude/

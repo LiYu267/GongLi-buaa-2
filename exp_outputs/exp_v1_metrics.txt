@@ -1,0 +1,22 @@
+Experiment v1: Fusion Method Comparison Metrics
+==================================================
+Date: experiment run
+Study area: Mariupol, Ukraine
+Data: VIIRS (Jan→May 2022), Sentinel-2 (Jan→May 2022)
+Known issue: S2 has seasonal confound (winter→spring)
+
+sensors_correlation: 0.040626
+bayes_vs_vote_diff: 0.122084
+bayes_vs_ds_diff: 0.336231
+bayes_shrinkage_to_prior: 0.714226
+ds_avg_interval_width: 0.000000
+pixels_high_uncertainty: 1.000000
+pixels_sensor_disagree: 0.512537
+
+Method Descriptions:
+  VIIRS-only: GMM on ΔNTL
+  S2-only: PCA + sigmoid on Δ(NDVI,NDWI,NBR,NDBI)
+  Bayesian: Conjugate Beta-Binomial hierarchical
+  D-S: Dempster-Shafer evidence theory, Bel/Pl
+  Vote Mean: (p1 + p2) / 2
+  Vote Weighted: precision-weighted average

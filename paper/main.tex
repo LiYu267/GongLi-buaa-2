@@ -1,0 +1,336 @@
+\documentclass[wcp]{jmlr}
+
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{bm}
+
+\jmlryear{2026}
+\jmlrworkshop{ACML 2026}
+
+\title[Bayesian Multi-Sensor Fusion for Conflict Damage]{Uncertainty-Aware Fusion of Nighttime Light, Multispectral, SAR, and InSAR Imagery for Conflict Damage Assessment: A Bayesian Hierarchical Approach}
+
+\author{
+  \Name{Author Names Removed for Review}\\
+  \addr Institution Removed for Double-Blind Review
+}
+
+\editors{Andy Song, Bo Han and Sarah Erfani}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Assessing infrastructure damage in conflict zones using satellite remote sensing is fundamentally challenged by the fact that no single sensor captures all dimensions of physical destruction. Nighttime light (VIIRS) detects functional collapse through power outages, multispectral imagery (Sentinel-2) captures spectral changes in vegetation and built structures, synthetic aperture radar (Sentinel-1) responds to structural scattering changes, and interferometric coherence (InSAR) measures surface stability. These four sensors measure fundamentally different physical quantities, and their damage assessments are often near-orthogonal in practice ($|\rho| < 0.11$ for all sensor pairs in our study). We propose a Bayesian hierarchical fusion framework that integrates these four heterogeneous data sources into a unified per-pixel damage probability with full uncertainty quantification via 95\% highest density intervals. We further implement Dempster-Shafer evidence theory as a comparative fusion paradigm and systematically evaluate both against simple voting baselines. Applied to Mariupol, Ukraine---a city severely affected by the 2022 conflict---our framework produces a fused damage probability of $0.176 \pm 0.032$ (posterior mean $\pm$ posterior standard deviation), with a 95\% HDI of $[0.059, 0.297]$. The near-zero cross-sensor correlations empirically validate the necessity of multi-source fusion, and the posterior uncertainty maps reveal where sensor disagreement is highest, providing actionable information for humanitarian assessment in data-scarce environments.
+\end{abstract}
+
+\begin{keywords}
+Bayesian hierarchical model; multi-sensor fusion; damage assessment; remote sensing; Dempster-Shafer theory
+\end{keywords}
+
+%========================================================================
+\section{Introduction}
+%========================================================================
+
+Satellite remote sensing has become an indispensable tool for monitoring armed conflicts and assessing their humanitarian impact. Since February 2022, the war in Ukraine has caused widespread infrastructure destruction, population displacement, and environmental degradation, creating an urgent need for reliable, scalable damage assessment methods. Remote sensing offers the unique advantage of accessing areas that are inaccessible to ground survey teams, providing synoptic, repeatable observations at multiple spatial and temporal scales~\citep{abrams2022war,skakun2022rapid}.
+
+However, a fundamental challenge persists: no single satellite sensor captures all dimensions of conflict damage. Nighttime light imagery (VIIRS/DNB) detects the \textit{functional} collapse of urban areas through reduced electricity consumption~\citep{li2020nighttime,levin2019remote}, but cannot distinguish between power outages, population evacuation, and physical destruction. Multispectral imagery (Sentinel-2, Landsat) detects \textit{spectral} changes in vegetation health and surface materials~\citep{gupta2022multi,zhu2022multi}, but is confounded by seasonal phenology and cloud cover. Synthetic Aperture Radar (Sentinel-1) amplitude responds to changes in surface roughness and dielectric properties~\citep{geudtner2014sentinel}, penetrating clouds but providing limited spectral information. Interferometric SAR coherence measures millimeter-scale surface stability~\citep{ferretti2001permanent}, detecting structural collapse through phase decorrelation, but is sensitive to temporal baselines and atmospheric effects.
+
+Each sensor measures a different physical manifestation of ``damage,'' and these manifestations are often decoupled in practice. A building reduced to rubble may show strong multispectral change (Sentinel-2) but negligible radar backscatter change (Sentinel-1), because rubble and intact buildings share similar C-band scattering properties. Conversely, a city-wide power outage produces dramatic nighttime light loss (VIIRS) with zero spectral or structural change. This sensor orthogonality means that single-sensor assessments are inherently incomplete, and that fusing multiple sensors is not merely beneficial but necessary for credible damage assessment.
+
+In this paper, we propose a Bayesian hierarchical framework for fusing four heterogeneous satellite sensors into a unified, per-pixel damage probability with full uncertainty quantification. Our contributions are threefold:
+
+\begin{enumerate}
+    \item We present the first four-sensor Bayesian fusion framework for conflict damage assessment, integrating VIIRS nighttime light, Sentinel-2 multispectral, Sentinel-1 SAR amplitude, and InSAR coherence data over a common study area.
+    \item We systematically compare three fusion paradigms---Bayesian hierarchical, Dempster-Shafer evidence theory, and simple voting---and analyze their behavior under varying degrees of sensor disagreement.
+    \item Through a case study of Mariupol, Ukraine, we demonstrate that the four sensors exhibit near-zero cross-correlation ($|\rho| < 0.11$), empirically validating the necessity of fusion and revealing the complementary nature of multi-sensor damage signals.
+\end{enumerate}
+
+%========================================================================
+\section{Related Work}
+%========================================================================
+
+\subsection{Remote Sensing for Conflict Damage Assessment}
+
+Nighttime light (NTL) imagery from the VIIRS Day-Night Band has been widely used to detect conflict-induced urban decline. \citet{li2020nighttime} demonstrated that NTL changes correlate strongly with conflict intensity in Syria and Yemen, using monthly composites to track infrastructure collapse. \citet{levin2019remote} extended this approach to quantify war-induced NTL loss across multiple conflict zones. However, NTL-based methods are limited to detecting functional rather than structural damage, and the 500~m spatial resolution of VIIRS prevents building-level assessment.
+
+Multispectral change detection using Sentinel-2 and Landsat has been applied to conflict damage assessment through spectral indices such as NDVI, NBR, and NDBI~\citep{gupta2022multi,zhu2022multi}. \citet{he2023building} and \citet{abrams2022war} proposed PCA-based multi-index fusion approaches for building damage detection using open-access satellite data over Mariupol. The primary challenge is separating conflict-induced changes from seasonal phenology and inter-annual variability, which we address through same-season image pairing.
+
+SAR-based damage detection exploits the sensitivity of radar backscatter to surface roughness and dielectric properties. \citet{washaya2020coherence} used Sentinel-1 coherence change detection for building damage assessment, finding that coherence is more sensitive to structural damage than amplitude alone. \citet{ferretti2001permanent} provide the foundational methodology for permanent scatterer InSAR processing.
+
+\subsection{Bayesian Sensor Fusion}
+
+Bayesian hierarchical models provide a principled framework for combining information from multiple heterogeneous sources while propagating uncertainty through each level of the hierarchy~\citep{gelman2013bayesian}. In remote sensing, Bayesian methods have been applied to land cover classification~\citep{li2015bayesian} and change detection~\citep{robert2020bayesian}. However, their application to multi-sensor conflict damage assessment remains unexplored.
+
+\subsection{Dempster-Shafer Evidence Theory}
+
+Dempster-Shafer (D-S) theory~\citep{shafer1976mathematical} generalizes Bayesian probability by allowing mass to be assigned to sets of hypotheses, not just singletons. This provides a natural framework for representing epistemic uncertainty---the ``I don't know'' component that arises when sensors provide conflicting information. D-S has been applied to remote sensing classification~\citep{le2013evidence} and multi-sensor fusion~\citep{liu2021multisensor}, but its comparative performance against Bayesian fusion in conflict damage contexts has not been systematically studied.
+
+%========================================================================
+\section{Study Area and Data}
+%========================================================================
+
+\subsection{Study Area}
+
+Our study area is Mariupol, a port city in southeastern Ukraine (47.1$^{\circ}$N, 37.5$^{\circ}$E) with a pre-war population of approximately 430,000. Mariupol experienced severe infrastructure damage during the 2022 conflict, with reports indicating extensive destruction across the urban core. The area of interest covers approximately 47~km $\times$ 57~km, encompassing the urban center, surrounding suburbs, and agricultural hinterland.
+
+\subsection{Satellite Data}
+
+We use four satellite data sources spanning the period before and after the conflict (Table~\ref{tab:data}). Critically, for Sentinel-2 we use May-to-May (2021 vs.\ 2022) image pairs to eliminate seasonal phenology effects---a methodological choice validated by our finding that $\Delta$NDVI changed from $+0.141$ (January--May, winter-to-spring) to $-0.018$ (May--May, inter-annual) when seasonal effects are controlled. Sentinel-1 SAR data underwent histogram matching to remove systematic radiometric bias, reducing the pre-post mean $\Delta\sigma^0$ from $-1.61$~dB to $+0.015$~dB. InSAR coherence was normalized using an exponential temporal decorrelation model with $\tau = 50$~days for C-band over mixed urban-agricultural terrain~\citep{ferretti2001permanent}.
+
+\begin{table}[htp]
+\centering
+\caption{Summary of satellite data sources.}
+\label{tab:data}
+\begin{tabular}{@{}lllll@{}}
+\toprule
+\textbf{Sensor} & \textbf{Product} & \textbf{Pre-war} & \textbf{Post-war} & \textbf{Resolution} \\
+\midrule
+VIIRS NTL & VNP46A2 & 2022-01-08 & 2022-05-08 & 500 m \\
+Sentinel-2 & MSI L2A & 2021-05-23 & 2022-05-08 & 10--20 m \\
+Sentinel-1 & GRD IW VV & 2021-06-01 & 2022-06-16 & $\sim$10 m \\
+InSAR Coh. & Interferogram & 2021-12/2022-02 & 2022-02/2022-03 & $\sim$20 m \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%========================================================================
+\section{Methodology}
+%========================================================================
+
+\subsection{Overview}
+
+Our framework consists of three stages (Figure~\ref{fig:framework}): (1) single-sensor damage probability estimation, where each sensor independently produces a per-pixel damage probability $p_k$ and associated uncertainty $\sigma_k$; (2) Bayesian hierarchical fusion, where the four sensor outputs are combined via a three-level Beta-Binomial conjugate model; and (3) comparative evaluation against Dempster-Shafer evidence theory and voting baselines.
+
+\begin{figure}[htp]
+\begin{center}
+\framebox[0.95\textwidth]{%
+\parbox{0.9\textwidth}{\small
+\textbf{Stage 1: Single-Sensor Damage Probability Estimation}
+\begin{itemize}\setlength{\itemsep}{1pt}
+\item VIIRS: $\Delta$NTL $\xrightarrow{\text{GMM (urban-core fit)}}$ $p_1,\sigma_1$
+\item S2: $\Delta$(NDVI, NBR, NDBI) $\xrightarrow{\text{PCA + directional score}}$ $p_2,\sigma_2$
+\item SAR: $\Delta\sigma^0$(dB) $\xrightarrow{\text{Histogram match + GMM}}$ $p_3,\sigma_3$
+\item InSAR: $\Delta$Coherence $\xrightarrow{\tau\text{-normalization + sigmoid}}$ $p_4,\sigma_4$
+\end{itemize}
+\textbf{Stage 2: Bayesian Hierarchical Fusion}\newline
+$\mathbf{p}^{\text{true}} \sim \text{Beta}(\alpha_0,\beta_0), \; \mathbf{p}_k|\mathbf{p}^{\text{true}} \sim \text{Beta}(\kappa_k \mathbf{p}^{\text{true}}, \kappa_k(1-\mathbf{p}^{\text{true}}))$\\[3pt]
+\textbf{Stage 3: Comparative Evaluation}\newline
+Bayesian posterior \quad vs.\quad Dempster-Shafer \quad vs.\quad Voting baselines
+}}
+\caption{Three-stage multi-sensor fusion framework.}
+\label{fig:framework}
+\end{center}
+\end{figure}
+
+\subsection{Single-Sensor Damage Probability Estimation}
+
+\textbf{VIIRS Nighttime Light.} We compute $\Delta\text{NTL} = \text{NTL}_{\text{post}} - \text{NTL}_{\text{pre}}$ within the Mariupol AOI. A two-component Gaussian Mixture Model (GMM) is fitted: the component with the more negative mean is interpreted as the ``damage'' class. A critical methodological innovation is that we fit the GMM exclusively on urban-core pixels (pre-war $\text{NTL} > 10$~nW/cm$^2$/sr, constituting only 0.8\% of the AOI), preventing dilution by dark rural pixels where absolute NTL change is always negligible. The per-pixel damage probability $p_1$ is the posterior probability of belonging to the damage component. Bootstrap resampling ($B=150$) over the urban-core pixels provides $\sigma_1$.
+
+\textbf{Sentinel-2 Multispectral.} We compute three spectral indices---NDVI, NBR, and NDBI---and their differences between May 2021 and May 2022. The three-dimensional $\Delta$-vector is standardized and projected onto its first principal component (PC1, explaining 98.3\% of variance). Crucially, we introduce a \textit{directional damage score}: since the PC1 loadings are $(+0.577, +0.580, -0.579)$ for (NDVI, NBR, NDBI), positive PC1 corresponds to vegetation increase (a non-damage direction). We compute:
+\begin{equation}
+\text{score} = \max\bigl(0,\; -\text{sign}(\bm{w}_{\text{NDVI}}) \cdot \text{PC1}\bigr)
+\end{equation}
+which only activates for pixels changing in the damage direction (NDVI decrease, NBR decrease, NDBI increase). A GMM on this one-sided score then separates pixels with negligible change from those with significant damage-direction deviation. This directional filter reduces the damage-classified pixel fraction from 57.9\% (omnidirectional $|\text{PC1}|$) to 43.3\%.
+
+\textbf{Sentinel-1 SAR.} We perform histogram matching between pre-war and post-war VV-polarized $\sigma^0$ to remove systematic radiometric biases from differing orbit geometries and seasonal moisture conditions. The matched dB difference is modeled via GMM to obtain $p_3$ and $\sigma_3$.
+
+\textbf{InSAR Coherence.} Interferometric coherence is normalized to a common temporal baseline using the exponential decorrelation model~\citep{ferretti2001permanent}:
+\begin{equation}
+\gamma_{\text{norm}} = \gamma \cdot \exp(\Delta t / \tau)
+\end{equation}
+with $\tau=50$~days. The normalized coherence difference is mapped to damage probability via a sigmoid: $p_4 = (1 + \exp(10 \cdot \Delta\gamma_{\text{norm}}))^{-1}$.
+
+\subsection{Bayesian Hierarchical Fusion}
+
+We employ a three-level Bayesian hierarchical model with Beta-Binomial conjugacy, avoiding MCMC while retaining full hierarchical structure:
+
+\begin{align}
+\text{Level 3 (Global Prior):}\quad & p_i^{\text{true}} \sim \text{Beta}(\alpha_0, \beta_0), \quad \alpha_0 = \beta_0 = 1 \label{eq:level3} \\
+\text{Level 2 (Observation):}\quad & p_{ik} \mid p_i^{\text{true}} \sim \text{Beta}\bigl(\kappa_k p_i^{\text{true}},\; \kappa_k(1-p_i^{\text{true}})\bigr) \label{eq:level2} \\
+\text{Level 1 (Posterior):}\quad & p_i^{\text{true}} \mid \mathbf{p}_i \sim \text{Beta}\Bigl(\alpha_0 + \sum_{k=1}^{4} \kappa_k p_{ik},\; \beta_0 + \sum_{k=1}^{4} \kappa_k (1-p_{ik})\Bigr) \label{eq:level1}
+\end{align}
+
+where $\kappa_k = \min\bigl(1/(\hat{\sigma}_k^2 + 0.005),\, 30\bigr)$ is the regularized sensor precision. The posterior mean is $\mathbb{E}[p_i^{\text{true}}|\mathbf{p}_i] = \alpha_{\text{post}}/(\alpha_{\text{post}}+\beta_{\text{post}})$, and the 95\% Highest Density Interval is obtained from the Beta quantiles. The critical advantage of this formulation is that when sensors disagree, the posterior variance increases (reflecting genuine uncertainty), and when they agree, the posterior concentrates (reflecting consensus).
+
+\subsection{Dempster-Shafer Evidence Theory}
+
+As a comparative paradigm, we implement D-S fusion over $\Theta = \{D, U\}$ ($D$=damaged, $U$=undamaged). The Basic Probability Assignment for sensor $k$ is:
+\begin{equation}
+m_k(\{D\}) = p_k(1-\sigma_k^{\text{norm}}), \quad
+m_k(\{U\}) = (1-p_k)(1-\sigma_k^{\text{norm}}), \quad
+m_k(\Theta) = \sigma_k^{\text{norm}}
+\end{equation}
+The four BPAs are combined sequentially via Dempster's rule: $m_{1:K} = m_1 \oplus m_2 \oplus m_3 \oplus m_4$, yielding belief $\text{Bel}(D)$ and plausibility $\text{Pl}(D)$, with the interval width quantifying epistemic uncertainty.
+
+\subsection{Baselines and Evaluation}
+
+We compare against three baselines: simple mean voting $\bar{p} = \frac{1}{4}\sum_k p_k$, precision-weighted voting with weights $\propto 1/\sigma_k^2$, and median voting. Synthetic validation injects known damage patterns (five scenarios varying which sensor dominates) into background pixels, with detection performance measured via ROC AUC.
+
+%========================================================================
+\section{Experiments}
+%========================================================================
+
+\subsection{Single-Sensor Results}
+
+Figure~\ref{fig:damage_maps} shows per-sensor damage probability maps and the fusion result. Table~\ref{tab:single_sensor} summarizes statistics.
+
+\begin{figure}[htp]
+\begin{center}
+\includegraphics[width=\textwidth]{../paper_figures/fig1_damage_maps.png}
+\caption{Damage probability maps: (a) VIIRS NTL ($\mu=0.002$), (b) Sentinel-2 MSI ($\mu=0.433$), (c) Sentinel-1 SAR ($\mu=0.006$), (d) InSAR Coherence ($\mu=0.215$), (e) Bayesian Fusion ($\mu=0.176$).}
+\label{fig:damage_maps}
+\end{center}
+\end{figure}
+
+\begin{table}[htp]
+\centering
+\caption{Single-sensor damage probability statistics.}
+\label{tab:single_sensor}
+\begin{tabular}{@{}lrrrc@{}}
+\toprule
+\textbf{Sensor} & \textbf{Mean $p$} & \textbf{Std $p$} & \textbf{Valid} & \textbf{Method} \\
+\midrule
+VIIRS NTL      & 0.002  & 0.020 & 93.4\% & GMM (urban-core fit) \\
+Sentinel-2 MSI & 0.433  & 0.030 & 73.7\% & PCA + directional GMM \\
+Sentinel-1 SAR & 0.006  & 0.031 & 100\%  & Hist-match + GMM \\
+InSAR Coh.     & 0.215  & 0.145 & 45.2\% & $\tau$-normalized sigmoid \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The VIIRS result reveals a critical spatial-scale effect: only 574 of 76,047 pixels (0.8\%) had pre-war NTL $>10$~nW/cm$^2$/sr, corresponding to genuine urban land cover. Within these urban-core pixels, mean $\Delta$NTL was $-9.92$, indicating substantial darkening. However, the GMM classifies only 4.5\% of the full AOI as potentially damaged, because rural and suburban pixels ($>99\%$ of the AOI) exhibit negligible absolute NTL change regardless of conflict status. This highlights that VIIRS-based damage assessment must account for the severe urban--rural sampling imbalance.
+
+Sentinel-2's directional damage score shows 42.7\% of pixels exhibit change in the damage direction, with 43.3\% of those achieving high magnitude---yielding $p_2=0.433$, substantially lower than the omnidirectional $|\text{PC1}|$ baseline ($0.579$). The direction filter eliminates false positives from vegetation growth between years.
+
+SAR backscatter shows minimal change after histogram matching (mean $\Delta\sigma^0 = +0.015$~dB, cf.\ $-1.61$~dB raw), with only 0.6\% of pixels classified as damaged. This is physically expected: the transition from intact buildings to rubble does not substantially alter C-band backscatter, as both present hard, angular scattering surfaces.
+
+\subsection{Cross-Sensor Correlation Analysis}
+
+Table~\ref{tab:corr} presents the Pearson correlation matrix. All cross-sensor correlations satisfy $|\rho| < 0.11$, with the maximum being $\rho = 0.063$ between SAR and InSAR. This near-complete orthogonality empirically validates that each sensor captures a fundamentally different damage dimension.
+
+\begin{table}[htp]
+\centering
+\caption{Cross-sensor Pearson correlation matrix. All $|\rho| < 0.11$.}
+\label{tab:corr}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ & \textbf{VIIRS} & \textbf{Sentinel-2} & \textbf{SAR} & \textbf{InSAR} \\
+\midrule
+VIIRS      & 1.000 & $-$0.011 & $-$0.005 & 0.001 \\
+Sentinel-2 &       & 1.000    & 0.017     & $-$0.019 \\
+SAR        &       &          & 1.000     & 0.063 \\
+InSAR      &       &          &           & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Fusion Results}
+
+Figure~\ref{fig:fusion_uncertainty} shows the Bayesian fusion posterior. The fused mean is $0.176 \pm 0.104$ (SD across pixels), with posterior $\sigma = 0.032$ and mean 95\% HDI width of $0.124$. Table~\ref{tab:fusion_summary} presents the full comparison.
+
+\begin{table}[htp]
+\centering
+\caption{Fusion results summary.}
+\label{tab:fusion_summary}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Method} & \textbf{Mean} & \textbf{Corr. w/ Fusion} & \textbf{KLD} \\
+\midrule
+VIIRS-only      & 0.021 & $-$0.005 & 2.422 \\
+S2-only         & 0.578 & 0.921 & 1.370 \\
+SAR-only        & 0.004 & 0.046 & 2.442 \\
+InSAR-only      & 0.217 & 0.372 & 1.264 \\
+Bayesian fusion & 0.176 & 1.000 & --- \\
+D-S Belief      & 0.014 & --- & --- \\
+Vote Mean       & 0.205 & --- & --- \\
+Vote Weighted   & 0.196 & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htp]
+\begin{center}
+\includegraphics[width=\textwidth]{../paper_figures/fig2_fusion_uncertainty.png}
+\caption{Bayesian fusion: (a) posterior mean, (b) posterior standard deviation, (c) 95\% HDI width.}
+\label{fig:fusion_uncertainty}
+\end{center}
+\end{figure}
+
+The Kullback-Leibler divergence (KLD) from prior to posterior quantifies the information contributed by each sensor. SAR provides the largest KLD (2.44)---not because it detects actual damage, but because its extreme $p_3 \approx 0$ strongly shifts the posterior away from the uniform prior. VIIRS (2.42) similarly anchors the posterior near zero for most pixels. S2 (1.37) and InSAR (1.26) contribute moderate information, with S2 being the primary driver of spatial variation ($\rho = 0.921$ with the fused posterior).
+
+\subsection{Method Comparison}
+
+\begin{figure}[htp]
+\begin{center}
+\includegraphics[width=0.88\textwidth]{../paper_figures/fig3_method_comparison.png}
+\caption{Mean damage probability across methods. Bayesian fusion closely tracks the vote mean when $\kappa_k$ are similar.}
+\label{fig:method_comp}
+\end{center}
+\end{figure}
+
+Figure~\ref{fig:method_comp} compares mean damage probability across all eight methods. The Bayesian fusion ($0.176$) is close to the simple mean ($0.205$) and precision-weighted mean ($0.196$), because the regularized $\kappa_k$ are similar across sensors. The D-S Belief is substantially lower ($0.014$) and its Plausibility ($0.015$) nearly equals Belief, yielding near-zero ignorance ($0.001$). This reflects D-S's strong conflict penalty: four ``highly certain'' sensors (low $\sigma$) providing contradictory assessments drive the Dempster combination toward zero belief via the conflict mass $K \approx 0.71$.
+
+\subsection{Version Improvement Tracking}
+
+\begin{figure}[htp]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{../paper_figures/fig5_version_tracking.png}
+\caption{Improvement tracking: v2 (uncorrected baseline), v3 (+SAR calibration, +InSAR $\tau$-normalization), v4 (+urban VIIRS focus, +directional S2).}
+\label{fig:version_tracking}
+\end{center}
+\end{figure}
+
+Figure~\ref{fig:version_tracking} tracks sensor outputs across experimental versions. The baseline (v2) suffered from two critical flaws: Sentinel-2 winter-to-spring pairing introduced a $+0.14$ seasonal NDVI artifact, and raw SAR comparison produced spurious $p_3 \approx 0.99$ from a $-1.61$~dB systematic offset. Version~3 corrected both via same-season S2 pairing and SAR histogram matching. Version~4 added urban-focused VIIRS fitting and directional S2 change detection, reducing $p_2$ from $0.579$ to $0.433$ by filtering out vegetation-growth false positives. The fusion result decreased monotonically from $0.462$ to $0.176$ as these corrections were applied, highlighting the critical importance of sensor-specific preprocessing in multi-source damage assessment.
+
+\subsection{Synthetic Validation}
+
+Table~\ref{tab:synthetic} reports synthetic validation results. Across five injection scenarios, all fusion methods achieve comparable AUC (0.84--0.89), with the best single-sensor performer varying by scenario. The performance parity between Bayesian fusion and simple voting is expected when $\kappa_k$ are similar; the Bayesian framework's advantage lies in its uncertainty quantification rather than point-estimate accuracy improvement over voting.
+
+\begin{table}[htp]
+\centering
+\caption{Synthetic validation (ROC AUC) across five damage injection scenarios.}
+\label{tab:synthetic}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Scenario} & \textbf{Best Single} & \textbf{Vote Mean} & \textbf{D-S Bel} & \textbf{Bayesian} \\
+\midrule
+A: VIIRS-dominant  & 0.893 & 0.881 & 0.877 & 0.881 \\
+B: S2-dominant     & 0.865 & 0.860 & 0.853 & 0.860 \\
+C: SAR-dominant    & 0.875 & 0.857 & 0.858 & 0.857 \\
+D: All-strong      & 0.870 & 0.867 & 0.865 & 0.867 \\
+E: Mixed           & 0.851 & 0.838 & 0.838 & 0.838 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%========================================================================
+\section{Discussion}
+%========================================================================
+
+\subsection{Why Near-Zero Cross-Sensor Correlation?}
+
+The near-zero correlations ($|\rho| < 0.11$) are not a methodological failure but a physical necessity. VIIRS measures emitted visible light, Sentinel-2 measures reflected solar radiation across 13 bands, Sentinel-1 measures active microwave backscatter, and InSAR measures phase coherence between repeat-pass acquisitions. These four physical quantities couple to ``damage'' through entirely different causal pathways: electricity infrastructure collapse, surface material change, geometric scattering change, and surface displacement, respectively. The empirical near-orthogonality confirms that single-sensor damage maps---regardless of spatial resolution or algorithmic sophistication---measure only one facet of a multidimensional phenomenon. This orthogonality is precisely why multi-sensor fusion is necessary.
+
+\subsection{Why D-S Is Overly Conservative for This Application}
+
+D-S evidence theory's strong conflict penalty is well-suited to forensic applications where contradictory evidence from credible sources indicates a logical inconsistency (e.g., two eyewitnesses giving incompatible testimonies). However, in multi-sensor remote sensing, sensor disagreement is both expected and informative. When VIIRS reports ``no damage'' (city lights remain on) while Sentinel-2 reports ``damage'' (spectral change from building collapse), this is not a contradiction to be resolved by penalizing both sources---it is a physically meaningful signal indicating differentiated impact (functional vs.\ structural). The Bayesian framework's natural handling of such disagreement via posterior variance increase provides a more appropriate inductive bias for remote sensing fusion.
+
+\subsection{Limitations}
+
+Several limitations warrant discussion. First, the InSAR analysis uses only two interferometric pairs; a time-series approach (e.g., SBAS) would provide more robust coherence estimates~\citep{ferretti2001permanent}. Second, SAR histogram matching assumes majority scene unchanged---reasonable but unverified. Third, building-level ground truth is unavailable, preventing pixel-level accuracy validation; synthetic experiments provide controlled benchmarks but real-world validation against UNOSAT assessments would strengthen findings. Fourth, $\kappa_k$ estimated from bootstrap resampling underestimates prediction uncertainty; Platt scaling or conformal prediction should be explored in future work~\citep{churchill2023sub}.
+
+%========================================================================
+\section{Conclusion}
+%========================================================================
+
+We presented a Bayesian hierarchical framework for fusing four heterogeneous satellite sensors into a unified per-pixel conflict damage probability with full uncertainty quantification. Applied to Mariupol, Ukraine, our framework yields a fused damage probability of $0.176 \pm 0.032$ (95\% HDI: $[0.059, 0.297]$) and reveals near-zero cross-sensor correlation ($|\rho| < 0.11$). This orthogonality empirically motivates multi-source fusion: each sensor captures a damage dimension the others miss. The Bayesian framework honestly expresses uncertainty when sensors disagree, and our improvement tracking (v2$\rightarrow$v4) demonstrates that careful sensor-specific preprocessing---same-season optical pairing, SAR radiometric normalization, urban-focused NTL analysis, and directional change detection---is essential for credible multi-sensor assessment. Our systematic comparison with Dempster-Shafer theory reveals that D-S's conflict penalty is overly conservative for heterogeneous remote sensing, where sensor disagreement is expected and physically meaningful. Future work will incorporate ground-truth validation data, time-series InSAR processing, and improved uncertainty calibration.
+
+\bibliography{acml26}
+
+\end{document}

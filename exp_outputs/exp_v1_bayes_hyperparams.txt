@@ -1,0 +1,9 @@
+
+Bayesian Hierarchical Fusion (Conjugate Approximation)
+======================================================
+Prior: Beta(1.0, 1.0)  [uniform]
+Sensor 1 (VIIRS): kappa median = 1.00
+Sensor 2 (S2):    kappa median = 1.00
+Posterior mean of p_fused: 0.3828
+Posterior std  of p_fused: 0.2149
+Note: Analytical Beta-Binomial conjugate used. Full MCMC pending.
