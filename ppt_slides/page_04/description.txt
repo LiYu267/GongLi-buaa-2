@@ -1,0 +1,1 @@
+方案A核心: S2三维光谱指数+PCA降维+Beta-Binomial层次模型
