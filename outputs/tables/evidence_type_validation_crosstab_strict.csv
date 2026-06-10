@@ -1,0 +1,7 @@
+evidence_type,damaged,no_damage
+both_high,0,12
+both_low,4,272
+no_data,0,7
+s2_high_viirs_low,0,22
+s2_low_viirs_high,301,309
+single_source,21,47

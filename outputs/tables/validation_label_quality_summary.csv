@@ -1,0 +1,9 @@
+metric,phase6_value,phase61_corrected,explanation
+unosat_total_cells,3459,3459,"SHP 中有 3,459 个 cells (完整评估网格)"
+unosat_damaged_cells,3459,767,Phase 6 将 Main_Damag=6 错当 damage; 正确: Main_Dam_1=14 仅 767
+unosat_damaged_pct,100.0,22.2,PDF 明确标注 22%
+validation_total_grids,1279,TBD,取决于匹配方式
+validation_damaged,1046,TBD,Phase 6 几乎所有匹配网格均标记为 damaged
+validation_no_damage,233,TBD,"Phase 6 的 233 个 ""presumed no-damage"" 均为未匹配网格, 非真实负类"
+both_low_hit_rate,85.7%,TBD,Phase 6 的 both_low 高命中率是因为负类标签错误
+phase6_auc_valid,NO,NO,"Phase 6 的 AUC/F1 基于错误标签, 需完全重算"

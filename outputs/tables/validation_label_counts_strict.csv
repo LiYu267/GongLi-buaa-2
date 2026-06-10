@@ -1,0 +1,7 @@
+label,count,meaning
+1,326,Visible Damage (Main_Dam_1=14)
+0,669,No Visible Damage (Main_Dam_1=6)
+-1,0,Outside UNOSAT
+subtype_no_damage_both,669,No damage either date
+subtype_new_damage_apr3,94,New damage (Apr 3)
+subtype_persistent_damage,232,Persistent damage

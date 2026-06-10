@@ -1,0 +1,26 @@
+field_name,dtype,n_unique,n_null,null_pct,sample_values
+SensorDate,datetime64[ms],1,0,0.0,"<DatetimeArray>
+['2022-03-26 00:00:00']
+Length: 1, dtype: datetime64[ms]"
+SensorID,int64,1,0,0.0,[1]
+Confidence,int32,1,0,0.0,[2]
+Main_Damag,int32,2,0,0.0,[ 6 14]
+SensorDa_1,datetime64[ms],1,0,0.0,"<DatetimeArray>
+['2022-04-03 00:00:00']
+Length: 1, dtype: datetime64[ms]"
+SensorID_2,int64,1,0,0.0,[5]
+Confiden_1,int32,1,0,0.0,[2]
+Main_Dam_1,int32,2,0,0.0,[ 6 14]
+FieldValid,int32,1,0,0.0,[0]
+Notes,str,2,3454,99.86,"<StringArray>
+['Burned area', 'дeти (children) written on the ground, but no nearby damage']
+Length: 2, dtype: str"
+Settlement,object,0,3459,100.0,[]
+Neighborho,object,0,3459,100.0,[]
+EventCode,str,1,0,0.0,"<StringArray>
+['CE20220223UKR']
+Length: 1, dtype: str"
+Analyst,int64,1,0,0.0,[45]
+Grouped_Da,int32,1,0,0.0,[1]
+Shape_Leng,float64,1,0,0.0,[2000.]
+Shape_Area,float64,1,0,0.0,[250000.]

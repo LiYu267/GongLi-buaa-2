@@ -1,0 +1,6 @@
+metric,logit_p_fused,ds_belief_damage,ds_plausibility_damage,ds_damage_mid,ds_interval_width,conflict_k
+both_high,0.6472,0.5703,0.7553,0.6628,0.185,0.1545
+s2_high_viirs_low,0.4391,0.4131,0.5819,0.4975,0.1688,0.1869
+s2_low_viirs_high,0.203,0.1334,0.2923,0.2129,0.1589,0.24
+both_low,0.1844,0.13,0.282,0.206,0.152,0.1349
+overall_both,0.2067,0.1433,0.3003,0.2218,0.157,0.2011

@@ -1,0 +1,5 @@
+ds_decision_class,damaged,no_damage
+confident_damage,0,7
+insufficient_evidence,40,166
+likely_no_damage,282,463
+possible_damage,4,33

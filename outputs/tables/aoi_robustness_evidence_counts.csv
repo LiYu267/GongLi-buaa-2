@@ -1,0 +1,10 @@
+subset,both_high,s2_high_viirs_low,s2_low_viirs_high,both_low,single_source,no_data,n_total
+01_full_aoi,12,23,649,369,293,34,1380
+02_urban_core,9,3,450,25,140,14,641
+03_city_industrial,10,13,589,203,265,27,1107
+04_quality_s2_ratio_0.5,11,23,588,359,0,0,981
+05_quality_s2_ratio_0.7,10,23,559,336,0,0,928
+06_quality_both_ratio_0.7,0,0,0,0,0,0,0
+07_prewar_bright_loss_rate_proxy,5,0,521,0,0,0,526
+08_prewar_very_bright_lr_gt_0.8,5,0,519,0,0,0,524
+09_high_uncertainty_top10pct,0,0,106,0,0,0,106

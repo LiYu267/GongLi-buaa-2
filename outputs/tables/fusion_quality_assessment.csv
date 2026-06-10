@@ -1,0 +1,27 @@
+category,metric,value,interpretation
+coverage,n_total_grids,1380,500m网格总数
+coverage,n_dual_sensor,1053,双传感器均有效的网格
+coverage,dual_coverage_ratio,0.763,双源覆盖率: 76.3% — 良好
+coverage,n_s2_only,78,仅S2: 多为AOI边缘/云掩膜区域
+coverage,n_viirs_only,215,仅VIIRS: 多为S2 SCL掩膜过严区域
+coverage,n_no_data,34,完全无数据
+distribution,p_s2_mean,0.1027,"S2损害分数低: 右偏分布, 少数极端"
+distribution,p_s2_median,0.0323,S2中位数极低: 多数网格几乎无信号
+distribution,p_viirs_mean,0.5102,VIIRS损害概率中等偏高
+distribution,p_viirs_median,0.5542,VIIRS中位数>0.5: 超半数网格高概率
+distribution,p_fused_mean,0.2277,融合概率低: 受S2压制
+distribution,p_fused_median,0.1989,融合中位数低: 保守结果
+consistency,spearman_r,-0.4216,中等负相关: S2与VIIRS呈反向关系 (互补)
+consistency,spearman_p,1.246435433989844e-46,高度显著 (p≈0)
+consistency,disagreement_mean,0.4702,传感器分歧大: 均值0.47 (尺度0-1)
+consistency,disagreement_median,0.5475,典型分歧>0.5: 严重冲突
+consistency,both_high_ratio,0.0114,双高仅12格: 一致确认损害极少
+consistency,s2_low_viirs_high_ratio,0.6163,主导分歧方向: 功能损害 vs 结构损害
+uncertainty,uncertainty_mean,0.4059,综合不确定性中等偏高
+uncertainty,uncertainty_median,0.3929,
+uncertainty,top30_dominant_evidence,s2_low_viirs_high,最高不确定性区域全是S2低/VIIRS高
+quality,s2_low_quality_grids,301,21.8%网格S2有效像素<20%
+quality,viirs_low_quality_grids,112,8.1%网格VIIRS有效像素<20%
+recommendation,fusion_conservativeness,conservative,Logit-平均融合在传感器冲突时倾向于低概率 — 减少假阳性但增加假阴性
+recommendation,ds_theory_needed,yes,"强烈建议进入D-S证据理论: 传感器冲突严重, 等权平均无法正确处理冲突证据"
+recommendation,need_labels,critical,需要UNOSAT或其他参考标签才能做精度评估; 当前仅为数据质量和一致性评估

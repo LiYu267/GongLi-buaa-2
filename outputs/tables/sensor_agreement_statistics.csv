@@ -1,0 +1,11 @@
+metric,value
+spearman_r,-0.421617
+spearman_p,0.0
+disagreement_mean,0.470158
+disagreement_median,0.547495
+p_s2_mean_of_both,0.103066
+p_viirs_mean_of_both,0.537247
+both_high_count,12
+s2_high_viirs_low_count,23
+s2_low_viirs_high_count,649
+both_low_count,369

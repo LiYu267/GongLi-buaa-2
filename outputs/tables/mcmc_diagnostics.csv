@@ -1,0 +1,4 @@
+target_accept,mu_rhat,mu_ess_bulk,mu_ess_tail,tau_rhat,tau_ess_bulk,tau_ess_tail,sigma_s2_rhat,sigma_s2_ess_bulk,sigma_s2_ess_tail,sigma_viirs_rhat,sigma_viirs_ess_bulk,sigma_viirs_ess_tail,delta_s2_rhat,delta_s2_ess_bulk,delta_s2_ess_tail,p_damage_rhat_max,divergences,total_time_s
+0.9,1.0,5628.0,3282.0,1.01,1151.0,1469.0,1.0,4899.0,3185.0,1.0,5664.0,3225.0,1.0,5975.0,3390.0,1.01,1,
+0.95,1.0,3074.0,2561.0,1.0,860.0,1111.0,1.0,4610.0,2739.0,1.0,3973.0,2883.0,1.0,2892.0,2603.0,1.0,1,
+0.99,1.0,3829.0,3386.0,1.0,760.0,1200.0,1.0,5175.0,2749.0,1.0,5284.0,2671.0,1.0,3678.0,3436.0,1.0,0,

@@ -1,0 +1,28 @@
+metric,value
+valid_pixels,62574
+score_mean,0.10528098791837692
+score_median,0.0012883450835943222
+score_std,0.19233354926109314
+score_min,0.0
+score_max,1.0
+score_p25,0.0
+score_p50,0.0012883450835943222
+score_p75,0.10657235980033875
+score_p90,0.41590824723243713
+threshold_VeryLow_to_Low,0.0
+threshold_Low_to_Medium,0.0012883450835943222
+threshold_Medium_to_High,0.10657235980033875
+threshold_High_to_VeryHigh,0.4159082472324374
+,
+category,count,ratio
+Very Low,306303,0.489511
+Low,106476,0.170162
+Medium,106478,0.170165
+High,43902,0.070161
+Very High,62574,0.100001
+No Data,231355,
+,,
+zscore_param,mu,sigma
+dNDVI,-0.037898887,0.22677605
+dNBR,-0.045489155,0.30458614
+dNDBI,0.018717108,0.23725335
