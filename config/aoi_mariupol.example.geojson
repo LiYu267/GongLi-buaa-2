@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Mariupol_AOI",
+        "description": "Area of Interest for Mariupol damage assessment",
+        "crs": "EPSG:4326"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [37.42, 47.05],
+            [37.72, 47.05],
+            [37.72, 47.18],
+            [37.42, 47.18],
+            [37.42, 47.05]
+          ]
+        ]
+      }
+    }
+  ]
+}

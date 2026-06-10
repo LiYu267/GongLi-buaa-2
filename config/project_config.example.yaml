@@ -1,0 +1,21 @@
+project_name: T20_Mariupol_RemoteSensing
+aoi_name: Mariupol_AOI
+aoi_bbox:
+  min_lon: 37.42
+  max_lon: 37.72
+  min_lat: 47.05
+  max_lat: 47.18
+main_experiment:
+  pre_date: "2021-05-23"
+  post_date: "2022-05-08"
+  pre_tiles:
+    - T37TCN
+    - T37TDN
+  post_tiles:
+    - T37TCN
+    - T37TDN
+sensors:
+  sentinel2: true
+  viirs: unknown
+  sentinel1_grd: true
+  sentinel1_insar: optional
